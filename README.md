@@ -11,5 +11,6 @@ The gene expression data was processed using the scripts shared. The numbers bef
 5. Model development and test data prediction: Models were built using different numbers of feature genes and varying kernels. Models were tested using test datasets. Models and test data predictions were saved for further analysis. 
 6. Prediction for independent dataset and RNA-Seq data: Quantile normalized and batch-corrected samples from the independent dataset and RNA-Seq were predicted using microarray-based machine learning models.
 7. Ensemble learning: Test data prediction of SVM and PAM models were ensemble using the Boolean operator “AND”.  Ensemble models were evaluated based on precision.
+
 Contact:
 Vipul : vipulwagh31@gmail.com
