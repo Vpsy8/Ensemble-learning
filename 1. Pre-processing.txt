@@ -1,0 +1,263 @@
+# Loading libraries
+
+library(tibble)
+library(plyr)
+library(dplyr)
+
+# Setting working directory
+
+setwd("")
+
+# Read files: GSE18312
+
+GSE18312=readRDS("18312_WN.rds")
+dim(GSE18312) #17131 21
+GSE18312$rn <- rownames(GSE18312)
+
+# Read files: GSE38481
+
+GSE38481=readRDS("38481_WN.rds")
+dim(GSE38481)# 12647 37
+GSE38481$rn <- rownames(GSE38481)
+
+# Read files: GSE38484
+
+GSE38484=readRDS("38484_WN.rds")
+dim(GSE38484)# 17233 202
+GSE38484$rn <- rownames(GSE38484)
+
+# Read files: GSE48072
+
+GSE48072=readRDS("48072_WN.rds")
+dim(GSE48072)# 15155    66
+GSE48072$rn <- rownames(GSE48072)
+
+# Read files: GSE48072
+
+GSE54913=readRDS("54913_WN.rds")
+dim(GSE54913)# 13003  30
+GSE54913$rn <- rownames(GSE54913)
+
+# Read files: kumarasinghe
+
+Kum2013= readRDS("Kum_WN.rds")
+dim(Kum2013)# 10544    21
+Kum2013$rn <- rownames(Kum2013)
+
+
+# Meta-file 
+
+Meta.file_raw <- join_all(list(GSE18312, GSE38481, GSE38484, GSE48072, GSE54913, Kum2013), 
+                          by = 'rn', type = 'inner')
+
+# Remove "rn" (rowname) column
+
+Meta.file_raw=column_to_rownames(Meta.file_raw, "rn")
+
+# check dimensions
+dim(Meta.file_raw)# 6858 377
+
+# Have numbers in the df in same format (optional)
+Meta.file_raw= format(Meta.file_raw, scientific = FALSE)
+
+# Shuffling the samples (coulmns) in the created meta-file
+
+set.seed(99) #to ensure data reproducibility
+
+Metafile.shuffled = Metafile[sample(1:ncol(Metafile))]
+
+#/ Divide data into 10 equal parts to perform cross validation
+
+Metafile.t= t(Metafile.shuffled) #transposed metafile
+
+k=10
+
+# 1st Sampling 
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) #randomize
+fold = 0  # selecting the fold to be tested
+
+train1 = Metafile.t[folds != fold,]
+test1 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train1, "train1.rds")
+saveRDS(test1, "test1.rds")
+
+# 2nd Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k)
+fold = 1  
+
+train2 = Metafile.t[folds != fold,]
+test2 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train2, "train2.rds")
+saveRDS(test2, "test2.rds")
+
+# 3rd Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 2 
+
+train3 = Metafile.t[folds != fold,]
+test3 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train3, "train3.rds")
+saveRDS(test3, "test3.rds")
+
+# 4th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 3  
+
+train4 = Metafile.t[folds != fold,]
+test4 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train4, "train4.rds")
+saveRDS(test4, "test4.rds")
+
+# 5th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 4  
+
+train5 = Metafile.t[folds != fold,]
+test5 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train5, "train5.rds")
+saveRDS(test5, "test5.rds")
+
+# 6th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 5  
+
+train6 = Metafile.t[folds != fold,]
+test6 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train6, "train6.rds")
+saveRDS(test6, "test6.rds")
+
+# 7th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 6 
+
+train7 = Metafile.t[folds != fold,]
+test7 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train7, "train7.rds")
+saveRDS(test7, "test7.rds")
+
+# 8th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 7 
+
+train8 = Metafile.t[folds != fold,]
+test8 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train8, "train8.rds")
+saveRDS(test8, "test8.rds")
+
+# 9th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 8  
+
+train9 = Metafile.t[folds != fold,]
+test9 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train9, "train9.rds")
+saveRDS(test9, "test9.rds")
+
+# 10th Sampling
+
+set.seed(99)
+
+folds = sample(1:nrow(Metafile.t)%%k) 
+fold = 9 
+
+train10 = Metafile.t[folds != fold,]
+test10 = Metafile.t[folds == fold,]
+
+# Exporting the train and the test files
+
+saveRDS(train10, "train10.rds")
+saveRDS(test10, "test10.rds")
+
+########################################################################
+Pre-processing of Indepedent dDtaset (GSE27383)
+##########################################################################
+
+
+setwd("")
+
+#/ Loading files
+
+GSE27383.raw = readRDS("27383_WN.rds")
+
+GSE27383.pheno = read.csv("Pheno_27383.csv")
+
+#/ Subsetting 
+
+#################################### Train 1 ####################################
+
+train1.DEGs=readRDS("train1.tab.rds")
+
+GSE27383.6858=GSE27383.raw[rownames(train1.DEGs),]
+
+table(is.na(GSE27383.6858))
+
+# Identify the missing rownames
+
+new_DF <- GSE27383.6858[rowSums(is.na(GSE27383.6858)) > 0,]
+# Of the 6858 genes 85 are missing from GSE27383
+
+# Impute the values of the missing genes as 1
+
+GSE27383.6858[is.na(GSE27383.6858)]=1
+
+# Have rownames same as microarray DEGs
+
+rownames(GSE27383.6858)=rownames(train1.DEGs)
+
+saveRDS(GSE27383.6858, "GSE27383.samples.final.1.rds")
+
+# NOTE: Repeat the steps with other iterations of the train data and the DEG files to create 10 sampling iterations of the independent dataset.

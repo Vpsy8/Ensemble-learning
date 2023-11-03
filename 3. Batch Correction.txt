@@ -1,0 +1,231 @@
+#/ Loading libraries
+
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(tibble)
+library(sva)
+library(ggfortify)
+
+#/ Setting working directory
+setwd("")
+
+#/ Read Quantile normalized train and test data
+
+Train1.qnorm=readRDS("train1.qnorm.rds")
+test1.qnorm=readRDS("test1.qnorm.rds")
+
+# Separate the pheno-data
+
+labels.Train1= Train1.qnorm[c(6859:6861),]
+labels.test1= test1.qnorm[c(6859:6861),]
+
+#/ Train 1
+
+# Inverse log 2 conversion before batch correction
+
+Train1.qnorm.df=Train1.qnorm[-c(6859:6861),]
+Train1.qnorm.mat= as.matrix(Train1.qnorm.df)
+class(Train1.qnorm.mat)="numeric"
+
+Train1.qnorm.mat=2^(Train1.qnorm.mat)
+
+# Batch correction using ComBat
+
+Train1.qnorm.t= as.data.frame(t(Train1.qnorm))
+batch.train1= as.integer(Train1.qnorm.t$Batch)
+modcombat.train1 = model.matrix(~1, data= Train1.qnorm.t[6859:6861])
+
+Train1.bc = ComBat(dat=Train1.qnorm.mat, batch=batch.train1, mod=modcombat.train1, par.prior=TRUE, prior.plots=FALSE)
+
+# Add back rows for pheno-data
+Train1.bc.ph= rbind(Train1.bc, labels.Train1)
+
+#/ PCA plot
+ 
+# Raw train data
+abc=prcomp(t(Train1.qnorm.mat), scale.=TRUE)
+autoplot(abc, data=Train1.qnorm.t[6859:6861], colour= "GSE_ID")+ theme_bw()
+
+# Batch corrected train data
+pqr=prcomp(t(Train1.bc), scale.=TRUE)
+autoplot(pqr, data=Train1.qnorm.t[6859:6861], colour= "GSE_ID")+ theme_bw()
+
+# Save batch corrected file
+saveRDS(Train1.bc.ph, "train1.batch-corrected.rds")
+
+#/ Test 1
+
+# Batch correct data with train data as reference
+
+# Bind train and test phdata
+test1.combat.phdata= cbind(labels.Train1, labels.test1)
+a=as.data.frame(t(test1.combat.phdata))
+a$ref.batch=8
+a$ref.batch[c(341:377)]=a$Batch[c(341:377)]
+
+# Inverse log 2 conversion
+
+test1.qnorm.df=test1.qnorm[-c(6859:6861),]
+test1.qnorm.mat= as.matrix(test1.qnorm.df)
+class(test1.qnorm.mat)="numeric"
+
+test1.qnorm.mat=2^(test1.qnorm.mat)
+
+# Bind batch corrected train and raw test data
+
+test1.combat.data=cbind(Train1.bc,test1.qnorm.mat)
+
+# Batch correction
+labels.test.t= as.data.frame(t(labels.test1))
+batch.test1=a$ref.batch
+modcombat.test1 = model.matrix(~1, data=a)
+
+
+combat.test1 = ComBat(dat=test1.combat.data, batch=batch.test1, mod=modcombat.test1, 
+                      par.prior=TRUE, prior.plots=FALSE, ref.batch = 8 )
+
+test1.bc = combat.test1[,colnames(test1.qnorm)]# test.qnorm has sample ids
+dim(test1.bc)# Batch corrected test data
+
+# Add back rows for labels
+test1.bc.ph= rbind(test1.bc, labels.test1)
+
+# PCA plot
+
+# Raw test data
+abc=prcomp(t(test1.combat.data), scale.=TRUE)
+autoplot(abc, data= a, colour= "GSE_ID")+ theme_bw()
+
+# Batch corrected test data
+pqr=prcomp(t(combat.test1), scale.=TRUE)
+autoplot(pqr, data=a, colour= "GSE_ID")+ theme_bw()
+
+# Save files
+saveRDS(test1.bc.ph, "test1.batch-corrected.rds")
+
+# Note: Repeat this analysis for all the iteration of training and testing datasets.
+
+################################################################
+# Batch correction for Independent Dataset (GSE27383)
+################################################################
+
+#/ Setting working directory
+setwd("")
+
+#/ Reading files 
+
+# a. GSE27383
+
+GSE27383.I1.QN=readRDS("I1.GSE27383.Qnorm.rds")
+
+labels.GSE27383= read.csv("Pheno_27383.csv")
+labels.GSE27383= column_to_rownames(labels.GSE27383, var = "GSE_ID")
+labels.GSE27383= as.data.frame(t(labels.GSE27383))
+
+# b. batch-corrected train data
+
+train1.bc= as.data.frame(readRDS("train1.batch-corrected.rds"))
+labels.train1= train1.bc[c(6859:6861),]
+train1.bc.mod= train1.bc[-c(6859:6861),]
+
+#/ Test iteration 1
+
+# Batch correct data with train data as reference
+# Bind train and test phdata
+combat.phdata= cbind(labels.train1, labels.GSE27383)
+dim(combat.phdata) # 3x412
+a=as.data.frame(t(combat.phdata))
+a$ref.batch=8
+a$ref.batch[c(341:412)]=a$Batch[c(341:412)]
+
+# Bind batch corrected train and raw test data
+
+combat.data=cbind(train1.bc.mod,GSE27383.I1.QN)
+dim(combat.data) #6858 412
+combat.data.mat=as.matrix(combat.data)
+class(combat.data.mat)="numeric"
+
+# Batch Correction
+
+batch=a$ref.batch
+modcombat = model.matrix(~1, data=a)
+
+combat_edata = ComBat(dat=combat.data.mat, batch=batch, mod=modcombat, par.prior=TRUE, 
+                      prior.plots=FALSE, ref.batch = 8)
+dim(combat_edata)
+
+# Save file
+setwd("")
+
+#> Now that GSE27383 data has been scaled according to microarray data. It can be used as test dataset
+#> Hence split the GSE27383 data from the metafile and save as testdata
+
+I1.GSE27383= data.frame(combat_edata[,colnames(labels.GSE27383)])
+I1.GSE27383.ph = rbind(I1.GSE27383, labels.GSE27383)
+dim(I1.GSE27383.ph)
+saveRDS(I1.GSE27383.ph, "I1.GSE27383.rds")
+
+# PCA plot
+
+# Raw test data
+abc=prcomp(t(combat.data.mat), scale.=TRUE)
+autoplot(abc, data= a, colour= "GSE_ID")+ theme_bw()
+
+# Batch corrected test data
+pqr=prcomp(t(combat_edata), scale.=TRUE)
+autoplot(pqr, data=a, colour= "GSE_ID")+ theme_bw()
+
+# Repeat the processing with all the ten iterations of train data.
+
+
+################################################################
+# Batch correction for RNA-Seq data
+################################################################
+
+
+# Subset pheno info for train1 batch corrected microarray data
+
+train1.phdata=phdata.df[colnames(train1.bcr.data), ]
+train1.phdata$Batch=1
+
+# Subset pheno info for RNA-seq data
+
+setwd("")
+
+RNA.seq.phdata=read.delim("RNA-Seq_phenodata_20_samples.txt", strip.white = T, row.names = "SampleID")
+RNA.seq.phdata.df=RNA.seq.phdata[c(1:3)]
+
+
+RNA.seq.phdata.df=RNA.seq.phdata.df[colnames(RNA.Seq.final.order),]# ensures sample order
+RNA.seq.phdata.df$Batch=2
+
+# Bind microarray and RNA-seq ph data
+RNA.Seq.phdata.forbcr=rbind(train1.phdata,RNA.seq.phdata.df)
+
+# Bind microarray and RNA-seq data
+
+train1.RNA_seq.forbcr=cbind(train1.bcr.data,RNA_seq.Qnorm)
+
+
+# Batch correction
+
+eMetaData=data.matrix(train1.RNA_seq.forbcr)
+batch=RNA.Seq.phdata.forbcr$Batch
+modcombat = model.matrix(~1, data=RNA.Seq.phdata.forbcr)
+
+combat_edata = ComBat(dat=eMetaData, batch=batch, mod=modcombat, par.prior=TRUE, 
+                      prior.plots=FALSE, ref.batch = 1)
+
+
+# Save file
+setwd("")
+
+# Now that RNA-seq data has been scaled according to microarray data. It can be used as test dataset
+# Hence split the RNA-seq data from the metafile and save as testdata
+
+R1.RNA_seq=combat_edata[,rownames(RNA.seq.phdata.df)]
+
+saveRDS()
+
+# Repeat the batch correction using all the ten iterations of train data.
