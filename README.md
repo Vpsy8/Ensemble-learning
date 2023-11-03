@@ -1,7 +1,11 @@
 # Ensemble learning for higher diagnostic precision in schizophrenia.
+
 Aim of the project: To achieve higher machine learning-based classification precision for psychiatric disorders using ensemble learning.
+
 Data type: Microarray Gene Expression Datasets and RNA-Seq data
+
 Packages used: Refer to scripts
+
 About the scripts:
 The gene expression data was processed using the scripts shared. The numbers before the title of the script indicate the sequence in which the analysis was performed. Below are the details of the analysis performed using the R scripts.
 1. Pre-processing: The script includes the creation of a meta-file from the gene expression datasets followed by a random selection of training and testing datasets. The script also includes the processing of an independent dataset and RNA-Seq samples.
