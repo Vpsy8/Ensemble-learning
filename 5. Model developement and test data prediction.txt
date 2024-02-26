@@ -25,7 +25,7 @@ labels.test1= as.factor(test1.bc[,c(2)])
 
 # Select the DEGs of interest w.r.t to the adj.P.value
 abc= Train1.DEG[order(Train1.DEG$adj.P.Val, decreasing = F),]
-top5DEG= abc[1:400,]
+top400DEG= abc[1:400,]
 
 # Subset Training and testing data from all DEG
 
@@ -48,14 +48,14 @@ sink("top400.SVM.Train1.txt")
 p.Train1 = predict(model.Train1, Train1.top400.mat) 
 
 #/ Confusion Matrix for Train set
-Train1.cm=confusionMatrix(p.Train1, labels.Train1)
+Train1.cm=confusionMatrix(p.Train1, labels.Train1, positive = “SCZ”)
 Train1.cm
 
 #/ Testing the model on test set
 p.test1 = predict(model.Train1, test1.top400.mat)
 
 #/ Confusion matrix for test set
-test1.cm=confusionMatrix(p.test1, labels.test1)
+test1.cm=confusionMatrix(p.test1, labels.test1, positive = “SCZ”)
 test1.cm
 
 sink()
@@ -79,7 +79,7 @@ write.table(ev_prob1, "SVM.top400.ev.prob1.txt", sep="\t")
 
 #/ Processing the training data for model building
 #> While creating the train list, it is better to transpose (train)data only after data partition step; 
-#> otherwise it yields errors while creating the model using pamr.train function.
+
 a= t(train1.top400.mat)
 
 train1.data = list(x= a, y= labels.train1, 
@@ -118,7 +118,7 @@ sink("PAM.top400.train1.txt")
 
 train1.cm=pamr.confusion(model.cv, Delta, extra = F)
 
-confusionMatrix(train1.cm)
+confusionMatrix(t(train1.cm), positive = “SCZ”)
 
 #/ Prediction using test data
 b= t(test1.top400.mat)
@@ -127,7 +127,7 @@ p.test1 = pamr.predict(pam.model, b, Delta)
 
 test1.top400.table=table(true = labels.test1, pred = p.test1)
 
-confusionMatrix(test1.top400.table)
+confusionMatrix(t(test1.top400.table), positive = “SCZ”)
 
 MCC.top400.test1=mcc(TN=test1.top400.table[1,1],
                      FP=test1.top400.table[1,2],
@@ -137,6 +137,10 @@ MCC.top400.test1=mcc(TN=test1.top400.table[1,1],
 MCC.top400.test1
 
 sink()
+
+
+#/ Save test predictions
+write.table(p.test1, “PAM.top5.test1.predictions.txt", sep="\t")
 
 #/ Saving the list of genes that survived
 
@@ -157,4 +161,4 @@ write.table(p.test1, "PAM.top400.test1.predictions.txt", sep="\t")
 write.table(ev_prob1, "PAM.top400.ev.prob1.txt", sep="\t")
 
 
-# NOTE: Repeat the steps for both the models of SVM and PAM with the other train iterations and the subsetted DEGs as well
+# NOTE: Repeat the above steps for SVM and PAM models with the other train iterations with DEGs of interest.
