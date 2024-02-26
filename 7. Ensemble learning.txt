@@ -65,7 +65,7 @@ I1.ensemble.predicted=factor(as.character(I1.ensemble$Ensemble))
 sink("Ensemble.top400.I1.txt")
 
 I1.ensemble.cm=table(true = I1.test.labels, pred = I1.ensemble.predicted)
-confusionMatrix(I1.ensemble.cm)
+confusionMatrix(t(I1.ensemble.cm), positive = “SCZ”)
 
 #/ MCC
 
