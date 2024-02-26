@@ -9,8 +9,7 @@ library(preprocessCore)
 setwd("")
 
 #/ Reading data
-Train1 = as.data.frame(readRDS("train1.rds"))
-Test1 = as.data.frame(readRDS("test1.rds"))
+Train1 = as.data.frame(readRDS("train1.rds"))Test1 = as.data.frame(readRDS("test1.rds"))
 
 #/ Samples from each batch need to be quantile normalized separately
 
@@ -159,7 +158,7 @@ Test1.GSE38481.qnorm <- normalize.quantiles.use.target(Test1.GSE38481.df,Train1.
 
 boxplot(Test1.GSE38481.qnorm)
 
-# Add column and row names from original data
+# Add column and row names from the original data
 dimnames(Test1.GSE38481.qnorm)=dimnames(Test1.GSE38481.df)
 
 # Add back the pheno-data
@@ -193,7 +192,7 @@ boxplot(Train1.GSE38484.qnorm)
 # Save targets
 Train1.GSE38484.targets= normalize.quantiles.determine.target(Train1.GSE38484.qnorm,target.length=NULL,subset=NULL)
 
-# Add column and row names from original data
+# Add column and row names from the original data
 dimnames(Train1.GSE38484.qnorm)=dimnames(Train1.GSE38484.df)
 
 # Add back the pheno-data
@@ -253,7 +252,7 @@ boxplot(Train1.GSE48072.qnorm)
 # Save targets
 Train1.GSE48072.targets= normalize.quantiles.determine.target(Train1.GSE48072.qnorm,target.length=NULL,subset=NULL)
 
-# Add column and row names from original data
+# Add column and row names from the original data
 dimnames(Train1.GSE48072.qnorm)=dimnames(Train1.GSE48072.df)
 
 # Add back the pheno-data
@@ -278,7 +277,7 @@ Test1.GSE48072.qnorm <- normalize.quantiles.use.target(Test1.GSE48072.df,Train1.
 
 boxplot(Test1.GSE48072.qnorm)
 
-# Add column and row names from original data
+# Add column and row names from the original data
 dimnames(Test1.GSE48072.qnorm)=dimnames(Test1.GSE48072.df)
 
 # Add back the pheno-data
@@ -372,7 +371,7 @@ boxplot(Train1.Kum.qnorm)
 # Save targets
 Train1.Kum.targets= normalize.quantiles.determine.target(Train1.Kum.qnorm,target.length=NULL,subset=NULL)
 
-# Add column and row names from original data
+# Add column and row names from the original data
 dimnames(Train1.Kum.qnorm)=dimnames(Train1.Kum.df)
 
 # Add back the pheno-data
@@ -397,7 +396,7 @@ Test1.Kum.qnorm <- normalize.quantiles.use.target(Test1.Kum.df,Train1.Kum.target
 
 boxplot(Test1.Kum.qnorm)
 
-# Add column and row names from original data
+# Add column and row names from the original data
 dimnames(Test1.Kum.qnorm)=dimnames(Test1.Kum.df)
 
 # Add back the pheno-data
@@ -428,11 +427,12 @@ saveRDS(Train1.qnorm.df, "train1.qnorm.rds")
 Test1.qnorm.df=as.data.frame(Test1.qnorm)
 saveRDS(Test1.qnorm.df, "test1.qnorm.rds")
 
-# Note: Repeat this analysis for all the iteration of training and testing datasets.
+# Note: Repeat this analysis for all the iterations of training and testing datasets.
 
 ##########################################################
 # Quantile normalization of Independent Dataset (GSE27383)
-##########################################################
+###########################################################
+# Note: The independent dataset is pre-processed using Q-normalized and batch-corrected train data. Hence this step should be performed after batch correction of train data.
 
 #/ Setting working directory
 
@@ -487,22 +487,24 @@ saveRDS(GSE27383.Qnorm, "I1.GSE27383.Qnorm.rds")
 # Quantile normalization of RNA-Seq samples
 ##########################################################
 
+# Note: The RNA-Seq samples are pre-processed using Q-normalized and batch-corrected train data. Hence, this step should be performed after batch correction of train data.
+
+
 # Read microarray train data
 setwd("")
 
 train1.bcr.data=readRDS("train1.batch-corrected")
-
 
 # Read RNA-Seq data (TPM values)
 setwd("")
 
 RNA.Seq.final=readRDS("RNA_Seq.20.samples.final.rds")
 
-# pheno-info  of microarray data
+# pheno-info of microarray data used in train data
 
 setwd("")
 
-phdata=read.delim("Phenodata_Metafile_7 Batches.txt", strip.white=TRUE)
+phdata=read.delim("Phenodata_Metafile_6 Batches.txt", strip.white=TRUE)
 
 phdata.df=phdata[c(2,5,6,9)]# Keep relevant info
 phdata.df=column_to_rownames(phdata.df,"Sample_ID") 
@@ -515,7 +517,7 @@ RNA.seq.phdata.df=RNA.seq.phdata[c(1:3)]
 
 ## Quantile normalization
 
-# Have rowmanes in the same order for train and test data
+# Have row names in the same order for train and test data
 
 RNA.Seq.final.order= RNA.Seq.final[rownames(train1.bcr.data),]
 RNA.Seq.final.order=as.matrix(RNA.Seq.final.order)
