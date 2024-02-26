@@ -4,7 +4,7 @@ library(tibble)
 library(plyr)
 library(dplyr)
 
-# Setting working directory
+# Setting the working directory
 
 setwd("")
 
@@ -57,16 +57,21 @@ Meta.file_raw=column_to_rownames(Meta.file_raw, "rn")
 # check dimensions
 dim(Meta.file_raw)# 6858 377
 
-# Have numbers in the df in same format (optional)
+# Have numbers in the df in the same format (optional)
 Meta.file_raw= format(Meta.file_raw, scientific = FALSE)
 
-# Shuffling the samples (coulmns) in the created meta-file
+# Pheno-data of the samples (containing “GSE_ID”, “Source” and “Batch”) was merged with the Meta.file_raw
+
+PhenoData = data.frame(t(read.csv(“phenodata_minus_ind.csv”)))
+Metaphenofile = rbind(“Phenodata”, “Meta.file_raw”)
+
+# Shuffling the samples (columns) in the created meta-file
 
 set.seed(99) #to ensure data reproducibility
 
-Metafile.shuffled = Metafile[sample(1:ncol(Metafile))]
+Metafile.shuffled = Metafile[sample(1:ncol(Metaphenofile))]
 
-#/ Divide data into 10 equal parts to perform cross validation
+#/ Divide data into 10 equal parts to perform cross-validation
 
 Metafile.t= t(Metafile.shuffled) #transposed metafile
 
@@ -223,41 +228,41 @@ saveRDS(train10, "train10.rds")
 saveRDS(test10, "test10.rds")
 
 ########################################################################
-Pre-processing of Indepedent dDtaset (GSE27383)
-##########################################################################
-
-
+Pre-processing of Indepedent Dataset (GSE27383)
+#########################################################################
+#/ Setting working directory
 setwd("")
 
 #/ Loading files
 
 GSE27383.raw = readRDS("27383_WN.rds")
 
-GSE27383.pheno = read.csv("Pheno_27383.csv")
 
-#/ Subsetting 
+#/ Sub-setting to have row names (DEGs) of independent dataset same as train data
 
 #################################### Train 1 ####################################
+
 
 train1.DEGs=readRDS("train1.tab.rds")
 
 GSE27383.6858=GSE27383.raw[rownames(train1.DEGs),]
 
-table(is.na(GSE27383.6858))
+table(is.na(GSE27383.6858)) #Checking for NAs
 
-# Identify the missing rownames
+# Identify the missing row names
 
 new_DF <- GSE27383.6858[rowSums(is.na(GSE27383.6858)) > 0,]
-# Of the 6858 genes 85 are missing from GSE27383
 
 # Impute the values of the missing genes as 1
 
 GSE27383.6858[is.na(GSE27383.6858)]=1
 
-# Have rownames same as microarray DEGs
+# Have row names the same as microarray DEGs
 
 rownames(GSE27383.6858)=rownames(train1.DEGs)
 
 saveRDS(GSE27383.6858, "GSE27383.samples.final.1.rds")
 
 # NOTE: Repeat the steps with other iterations of the train data and the DEG files to create 10 sampling iterations of the independent dataset.
+
+
