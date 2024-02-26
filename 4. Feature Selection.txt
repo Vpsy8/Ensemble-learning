@@ -67,4 +67,4 @@ EnhancedVolcano(train1.tab,
 # Save DE file
 saveRDS(train1.tab, "train1.tab.rds")
 
-# Note: Repeat this analysis for all the iteration of training and testing datasets.
+# Note: Repeat this analysis for all the iterations of training and datasets.
