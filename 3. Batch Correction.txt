@@ -152,7 +152,7 @@ batch=a$ref.batch
 modcombat = model.matrix(~1, data=a)
 
 combat_edata = ComBat(dat=combat.data.mat, batch=batch, mod=modcombat, par.prior=TRUE, 
-                      prior.plots=FALSE, ref.batch = 8)
+                      prior.plots=FALSE, ref.batch = 8) #set train data as reference
 dim(combat_edata)
 
 # Save file
@@ -215,14 +215,14 @@ batch=RNA.Seq.phdata.forbcr$Batch
 modcombat = model.matrix(~1, data=RNA.Seq.phdata.forbcr)
 
 combat_edata = ComBat(dat=eMetaData, batch=batch, mod=modcombat, par.prior=TRUE, 
-                      prior.plots=FALSE, ref.batch = 1)
+                      prior.plots=FALSE, ref.batch = 1)# set train data as reference
 
 
 # Save file
 setwd("")
 
 # Now that RNA-seq data has been scaled according to microarray data. It can be used as test dataset
-# Hence split the RNA-seq data from the metafile and save as testdata
+# Hence split the RNA-seq data from the metafile and save as test data
 
 R1.RNA_seq=combat_edata[,rownames(RNA.seq.phdata.df)]
 
