@@ -36,7 +36,7 @@ labels.testI1= as.factor(testI1.bc[,c(2)])
 abc= train1.DEG[order(train1.DEG$adj.P.Val, decreasing = F),]
 top400DEG= abc[1:400,]
 
-# Subset training and testing data from all DEG
+# Subset training and testing data for DEGs of interest
 
 train1.top400= train1.bc[,rownames((top400DEG))]
 train1.top400.mat= as.matrix(train1.top400)
@@ -58,14 +58,14 @@ sink("top400.SVM.train1.txt")
 p.train1 = predict(model.train1, train1.top400.mat) 
 
 #/ Confusion Matrix for train set
-train1.cm=confusionMatrix(p.train1, labels.train1)
+train1.cm=confusionMatrix(p.train1, labels.train1, positive = “SCZ”)
 train1.cm
 
 #/ Testing the model on test set
 p.testI1 = predict(model.train1, testI1.top400.mat)
 
 #/ Confusion matrix for test set
-testI1.cm=confusionMatrix(p.testI1, labels.testI1)
+testI1.cm=confusionMatrix(p.testI1, labels.testI1, positive = “SCZ”)
 testI1.cm
 
 sink()
@@ -103,7 +103,7 @@ sink("PAM.top400.train1.txt")
 
 train1.cm=pamr.confusion(Model.train1, Delta, extra = F)
 
-confusionMatrix(train1.cm)
+confusionMatrix(t(train1.cm), positive = “SCZ”)
 
 #/ Prediction using test data
 b= t(testI1.top400.mat)
@@ -112,7 +112,7 @@ p.testI1 = pamr.predict(Model.train1, b, Delta)
 
 testI1.top400.table=table(true = labels.testI1, pred = p.testI1)
 
-confusionMatrix(testI1.top400.table)
+confusionMatrix(t(testI1.top400.table), positive = “SCZ”)
 
 MCC.top400.testI1=mltools::mcc(TN=testI1.top400.table[1,1],
                       FP=testI1.top400.table[1,2],
@@ -132,7 +132,7 @@ write.table(p.testI1, "PAM.top400.testI1.predictions.txt", sep="\t")
 
 write.table(ev_prob1, "PAM.top400.ev.prob1.txt", sep="\t")
 
-NOTE: Repeat the steps for both the models of SVM and PAM with the other train iterations and the subsetted DEGs as well
+Note: Repeat the above steps for SVM and PAM models with the other train iterations and the DEGs of interest 
 
 #############################################################################################
 Cross-platform validation
@@ -175,10 +175,8 @@ R1.RNA.Seq.phData=RNA.seq.phdata[colnames(R1.RNA_seq.df),, drop=F]
 R1.RNA_seq.flabels=factor(as.character(R1.RNA.Seq.phData$Source))
 
 # Predict test data samples 
-R1.400DEGs.predict=predict(train1.400DEGs.SVMradial, R1.RNA_seq.final)
-
-R1.400DEGs.cm=table(true = R1.RNA_seq.flabels, pred = R1.400DEGs.predict)
-confusionMatrix(R1.400DEGs.cm)
+R1.400DEGs.predict=predict(train1.400DEGs.SVMradial, R1.RNA_seq.final)R1.400DEGs.cm=table(true = R1.RNA_seq.flabels, pred = R1.400DEGs.predict)
+confusionMatrix(t(R1.400DEGs.cm), positive = “SCZ”)
 
 MCC.top400.R1=mcc(TN=R1.400DEGs.cm[1,1],
                      FP=R1.400DEGs.cm[1,2],
@@ -258,7 +256,7 @@ top400.R1.predict=pamr.predict(train1.top400.PAM, R1.RNA_Seq.df, Delta)
 
 top400.R1.predict.table=table(true = R1.RNA_Seq.flabels, pred = top400.R1.predict)
 
-confusionMatrix(top400.R1.predict.table)
+confusionMatrix(t(top400.R1.predict.table), positive = “SCZ”)
 
 MCC.top400.R1=mcc(TN=top400.R1.predict.table[1,1],
                   FP=top400.R1.predict.table[1,2],
@@ -289,3 +287,5 @@ confusionMatrix(top400.R1.predict.table)
 MCC.top400.R1
 
 sink()
+
+##########
